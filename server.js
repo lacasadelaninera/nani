@@ -33,18 +33,20 @@ app.post('/crear-sesion-pago', async (req, res) => {
             };
         });
 
-        // Cambiamos las URLs para que redirijan a tu web real en Netlify
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card', 'bizum'],
-            line_items: line_items,
-            mode: 'payment',
-            success_url: 'https://lacasadelaninera.netlify.app/?pago=exitoso', 
-            cancel_url: 'https://lacasadelaninera.netlify.app/?pago=cancelado',
-            metadata: {
-                tutor: tutor,
-                whatsapp: whatsapp
-            }
-        });
+       const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card', 'bizum'], //[cite: 5]
+    line_items: line_items, //[cite: 5]
+    mode: 'payment', //[cite: 5]
+    
+    // ⚠️ ASEGÚRATE DE QUE ESTA SEA TU URL REAL EN NETLIFY:
+    success_url: 'https://lacasadelaninerazizur.netlify.app/?pago=exitoso', 
+    cancel_url: 'https://lacasadelaninerazizur.netlify.app/?pago=cancelado',
+    
+    metadata: {
+        tutor: tutor, //[cite: 5]
+        whatsapp: whatsapp //[cite: 5]
+    }
+});
 
         res.json({ stripe_url: session.url });
 
