@@ -35,7 +35,7 @@ app.post('/crear-sesion-pago', async (req, res) => {
 
         // Cambiamos las URLs para que redirijan a tu web real en Netlify
         const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
+            payment_method_types: ['card', 'bizum'],
             line_items: line_items,
             mode: 'payment',
             success_url: 'https://lacasadelaninera.netlify.app/?pago=exitoso', 
