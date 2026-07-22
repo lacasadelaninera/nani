@@ -9,16 +9,19 @@ const app = express();
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-// Reemplaza la configuración de transporter por esta:
+// Configuración de transporte optimizada para Render (Puerto 587)
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // Usa SSL/TLS de forma directa por el puerto 465
+    port: 587,
+    secure: false, // Debe ser false para el puerto 587
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
-    connectionTimeout: 10000 // 10 segundos máximo de espera
+    tls: {
+        rejectUnauthorized: false // Evita bloqueos de certificados en servidores cloud
+    },
+    connectionTimeout: 15000 // Aumentamos el tiempo de espera a 15 segundos
 });
 
 app.post('/crear-sesion-pago', async (req, res) => {
