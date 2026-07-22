@@ -82,6 +82,3 @@ app.post('/crear-sesion-pago', async (req, res) => {[cite: 5]
 
 const PORT = process.env.PORT || 3000;[cite: 5]
 app.listen(PORT, () => console.log(`Servidor de pagos corriendo en el puerto ${PORT}`));[cite: 5]
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor de pagos corriendo en el puerto ${PORT}`));
