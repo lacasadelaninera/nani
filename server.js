@@ -1,13 +1,13 @@
-require('dotenv').config();[cite: 5]
-const express = require('express');[cite: 5]
-const cors = require('cors');[cite: 5]
-const nodemailer = require('nodemailer');[cite: 3]
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);[cite: 5]
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const nodemailer = require('nodemailer');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-const app = express();[cite: 5]
+const app = express();
 
-app.use(cors({ origin: '*' }));[cite: 5]
-app.use(express.json());[cite: 5]
+app.use(cors({ origin: '*' }));
+app.use(express.json());
 
 // Configuración opcional de correo
 const transporter = nodemailer.createTransport({
@@ -18,43 +18,43 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-app.post('/crear-sesion-pago', async (req, res) => {[cite: 5]
+app.post('/crear-sesion-pago', async (req, res) => {
     try {
-        const { tutor, whatsapp, items } = req.body;[cite: 5]
+        const { tutor, whatsapp, items } = req.body;
 
-        if (!items || items.length === 0) {[cite: 5]
-            return res.status(400).json({ error: 'El carrito está vacío.' });[cite: 5]
+        if (!items || items.length === 0) {
+            return res.status(400).json({ error: 'El carrito está vacío.' });
         }
 
         const resumenServiciosText = items.map(i => `- ${i.nombre} (Cantidad: ${i.quantity || 1})`).join('\n');
 
-        const line_items = items.map(item => {[cite: 5]
+        const line_items = items.map(item => {
             return {
-                price_data: {[cite: 5]
-                    currency: 'eur',[cite: 5]
-                    product_data: {[cite: 5]
-                        name: item.nombre,[cite: 5]
+                price_data: {
+                    currency: 'eur',
+                    product_data: {
+                        name: item.nombre,
                     },
-                    unit_amount: item.precioEuroCentavos,[cite: 5]
+                    unit_amount: item.precioEuroCentavos,
                 },
-                quantity: item.quantity || 1,[cite: 5]
+                quantity: item.quantity || 1,
             };
         });
 
-        const session = await stripe.checkout.sessions.create({[cite: 5]
-            payment_method_types: ['card', 'bizum'],[cite: 5]
-            line_items: line_items,[cite: 5]
-            mode: 'payment',[cite: 5]
-            success_url: 'https://lacasadelaninerazizur.netlify.app/?pago=exitoso',[cite: 5]
-            cancel_url: 'https://lacasadelaninerazizur.netlify.app/?pago=cancelado',[cite: 5]
-            metadata: {[cite: 5]
-                tutor: tutor,[cite: 5]
-                whatsapp: whatsapp,[cite: 5]
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card', 'bizum'],
+            line_items: line_items,
+            mode: 'payment',
+            success_url: 'https://lacasadelaninerazizur.netlify.app/?pago=exitoso',
+            cancel_url: 'https://lacasadelaninerazizur.netlify.app/?pago=cancelado',
+            metadata: {
+                tutor: tutor,
+                whatsapp: whatsapp,
                 resumen: resumenServiciosText
             }
         });
 
-        // Intentar enviar el correo si las variables están configuradas
+        // Envío de correo si las credenciales existen
         if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
             const mailOptions = {
                 from: process.env.EMAIL_USER,
@@ -73,13 +73,13 @@ app.post('/crear-sesion-pago', async (req, res) => {[cite: 5]
             });
         }
 
-        res.json({ stripe_url: session.url });[cite: 5]
+        res.json({ stripe_url: session.url });
 
-    } catch (error) {[cite: 5]
-        console.error('Error al crear la sesión de Stripe:', error);[cite: 5]
-        res.status(500).json({ error: error.message });[cite: 5]
+    } catch (error) {
+        console.error('Error al crear la sesión de Stripe:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
-const PORT = process.env.PORT || 3000;[cite: 5]
-app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));[cite: 5]
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
