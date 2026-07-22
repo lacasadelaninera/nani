@@ -1,35 +1,14 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const nodemailer = require('nodemailer');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { Resend } = require('resend');
 
 const app = express();
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
-
-const { Resend } = require('resend');
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-// Dentro de tu app.post('/crear-sesion-pago', ...)
-if (process.env.RESEND_API_KEY) {
-    try {
-        await resend.emails.send({
-            from: 'La Casa de la Niñera <onboarding@resend.dev>',
-            to: process.env.EMAIL_USER, // Tu correo de destino
-            subject: `🔔 Nueva Reserva - ${tutor}`,
-            text: `¡Hola! Se ha generado una solicitud de reserva:\n\n` +
-                  `👤 Tutor/a: ${tutor}\n` +
-                  `📱 WhatsApp: ${whatsapp}\n\n` +
-                  `📋 Servicios:\n${resumenServiciosText}\n\n` +
-                  `El cliente ha sido derivado a la pasarela de pago.`
-        });
-        console.log('Correo enviado con éxito vía Resend');
-    } catch (mailError) {
-        console.error('Error al enviar correo con Resend:', mailError);
-    }
-}
 
 app.post('/crear-sesion-pago', async (req, res) => {
     try {
@@ -67,10 +46,10 @@ app.post('/crear-sesion-pago', async (req, res) => {
             }
         });
 
-        // Envío de correo si las credenciales existen
-        if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-            const mailOptions = {
-                from: process.env.EMAIL_USER,
+        // Envío de correo mediante Resend
+        if (process.env.RESEND_API_KEY) {
+            resend.emails.send({
+                from: 'La Casa de la Niñera <onboarding@resend.dev>',
                 to: process.env.EMAIL_USER,
                 subject: `🔔 Nueva Reserva - ${tutor}`,
                 text: `¡Hola! Se ha generado una solicitud de reserva:\n\n` +
@@ -78,11 +57,10 @@ app.post('/crear-sesion-pago', async (req, res) => {
                       `📱 WhatsApp: ${whatsapp}\n\n` +
                       `📋 Servicios:\n${resumenServiciosText}\n\n` +
                       `El cliente ha sido derivado a la pasarela de pago.`
-            };
-
-            transporter.sendMail(mailOptions, (error, info) => {
-                if (error) console.error('Error al enviar correo:', error);
-                else console.log('Correo enviado correctamente:', info.response);
+            }).then(response => {
+                console.log('Correo enviado correctamente vía Resend:', response);
+            }).catch(error => {
+                console.error('Error al enviar correo vía Resend:', error);
             });
         }
 
@@ -94,5 +72,5 @@ app.post('/crear-sesion-pago', async (req, res) => {
     }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
