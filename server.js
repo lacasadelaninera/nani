@@ -9,20 +9,27 @@ const app = express();
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-// Configuración de transporte optimizada para Render (Puerto 587)
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // Debe ser false para el puerto 587
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    },
-    tls: {
-        rejectUnauthorized: false // Evita bloqueos de certificados en servidores cloud
-    },
-    connectionTimeout: 15000 // Aumentamos el tiempo de espera a 15 segundos
-});
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Dentro de tu app.post('/crear-sesion-pago', ...)
+if (process.env.RESEND_API_KEY) {
+    try {
+        await resend.emails.send({
+            from: 'La Casa de la Niñera <onboarding@resend.dev>',
+            to: process.env.EMAIL_USER, // Tu correo de destino
+            subject: `🔔 Nueva Reserva - ${tutor}`,
+            text: `¡Hola! Se ha generado una solicitud de reserva:\n\n` +
+                  `👤 Tutor/a: ${tutor}\n` +
+                  `📱 WhatsApp: ${whatsapp}\n\n` +
+                  `📋 Servicios:\n${resumenServiciosText}\n\n` +
+                  `El cliente ha sido derivado a la pasarela de pago.`
+        });
+        console.log('Correo enviado con éxito vía Resend');
+    } catch (mailError) {
+        console.error('Error al enviar correo con Resend:', mailError);
+    }
+}
 
 app.post('/crear-sesion-pago', async (req, res) => {
     try {
