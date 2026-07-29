@@ -37,8 +37,8 @@ app.post('/crear-sesion-pago', async (req, res) => {
             payment_method_types: ['card', 'bizum'],
             line_items: line_items,
             mode: 'payment',
-            success_url: 'https://lacasadelaninerazizur.netlify.app/?pago=exitoso',
-            cancel_url: 'https://lacasadelaninerazizur.netlify.app/?pago=cancelado',
+            success_url: 'https://lacasadelaninera.netlify.app/?pago=exitoso',
+            cancel_url: 'https://lacasadelaninera.netlify.app/?pago=cancelado',
             metadata: {
                 tutor: tutor,
                 whatsapp: whatsapp,
